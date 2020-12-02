@@ -4,29 +4,42 @@
             <Logo />
             <h1 class="title">nuxt-web3-contract</h1>
             <div class="links">
-                <a
-                    href="https://nuxtjs.org/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="button--green"
-                >
-                    Documentation
-                </a>
-                <a
-                    href="https://github.com/nuxt/nuxt.js"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="button--grey"
-                >
-                    GitHub
-                </a>
+                <input
+                    type="text"
+                    v-model="inputNumber"
+                    placeholder="input number"
+                />
+                <button @click="setNumber()">Set Number to contract</button>
             </div>
+            <div class="links">
+                <button @click="getNumber()">Get Number from contract</button>
+            </div>
+            <div>Number:{{ number }}</div>
         </div>
     </div>
 </template>
 
 <script>
 export default {
+    data() {
+        return {
+            number: 0, // コントラクトから取得する数値
+            inputNumber: 0, // フォームから入力された数値
+        };
+    },
+    methods: {
+        getNumber: async function () {
+            let ret = await this.$contract.methods.get().call(); // コントラクトからの読み込み部分
+            this.number = ret; // フロントへ反映
+        },
+        setNumber: async function () {
+            let accounts = await this.$web3.eth.getAccounts(); // MetaMaskで使っているアカウントの取得
+            let account = accounts[0];
+            let ret = await this.$contract.methods
+                .set(this.inputNumber)
+                .send({ from: account }); // コントラクトへの書き込み部分
+        },
+    },
     mounted() {
         console.log("Current Block Number");
         this.$web3.eth.getBlockNumber().then(console.log);
