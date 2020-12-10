@@ -90,3 +90,7 @@ sw.*
 *.swp
 
 .envrc
+
+public/
+
+*.cache
