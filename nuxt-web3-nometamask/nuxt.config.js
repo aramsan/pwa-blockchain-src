@@ -1,8 +1,12 @@
 export default {
   ssr: false,
-  generate: { // ←ここから追加
+  generate: {
     dir: "public"
-  }, // ←ここまで追加
+  }, 
+  env: { //ここから追加
+    APIKEY: process.env.APIKEY,
+    AUTHDOMAIN: process.env.AUTHDOMAIN,
+  },
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
     title: 'nuxt-web3-nometamask',

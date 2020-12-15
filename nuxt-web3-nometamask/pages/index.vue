@@ -3,7 +3,12 @@
         <div>
             <Logo />
             <h1 class="title">nuxt-web3-nometamask</h1>
-            <div class="links">
+            <div class="links" v-if="!isSignedIn">
+                <button @click="signIn()">Sign In</button>
+            </div>
+
+            <div class="links" v-if="isSignedIn">
+                <!-- ←ここも少し変えています。 -->
                 <input
                     type="text"
                     v-model="inputNumber"
@@ -20,11 +25,13 @@
 </template>
 
 <script>
+import firebase from "firebase";
 export default {
     data() {
         return {
             number: 0, // コントラクトから取得する数値
             inputNumber: 0, // フォームから入力された数値
+            isSignedIn: false, // ←ここを追加
         };
     },
     methods: {
@@ -39,8 +46,35 @@ export default {
                 .set(this.inputNumber)
                 .send({ from: account }); // コントラクトへの書き込み部分
         },
+        signIn: function () {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithRedirect(provider);
+        },
     },
     mounted() {
+        if (!firebase.apps.length) {
+            var firebaseConfig = {
+                apiKey: process.env.APIKEY,
+                authDomain: process.env.AUTHDOMAIN,
+            };
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+        }
+        var self = this;
+        firebase
+            .auth()
+            .getRedirectResult()
+            .then(function (result) {
+                if (result.credential) {
+                    let user = result.user;
+                    self.isSignedIn = true;
+                    console.log(user.uid);
+                }
+            })
+            .catch(function (error) {
+                let errorMessage = error.message;
+                console.log(errorMessage);
+            });
         console.log("Current Block Number");
         this.$web3.eth.getBlockNumber().then(console.log);
     },
