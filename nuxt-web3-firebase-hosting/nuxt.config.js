@@ -1,7 +1,11 @@
 export default {
+  ssr: false,
+  generate: { // ←ここから追加
+    dir: "public"
+  }, // ←ここまで追加
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    title: 'nuxt-web3-contract',
+    title: 'nuxt-web3-firebase-hosting',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
