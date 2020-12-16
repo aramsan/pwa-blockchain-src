@@ -25,13 +25,17 @@
 </template>
 
 <script>
+import toContract from "~/plugins/toContract.js";
 import firebase from "firebase";
+import sha256 from "js-sha256";
 export default {
     data() {
         return {
             number: 0, // コントラクトから取得する数値
             inputNumber: 0, // フォームから入力された数値
             isSignedIn: false, // ←ここを追加
+            pk: "", //秘密鍵
+            address: "", //アドレス
         };
     },
     methods: {
@@ -40,11 +44,17 @@ export default {
             this.number = ret; // フロントへ反映
         },
         setNumber: async function () {
-            let accounts = await this.$web3.eth.getAccounts(); // MetaMaskで使っているアカウントの取得
-            let account = accounts[0];
-            let ret = await this.$contract.methods
-                .set(this.inputNumber)
-                .send({ from: account }); // コントラクトへの書き込み部分
+            const functionAbi = await this.$contract.methods
+                .set(this.inputNumber) // 呼び出す関数と引数の設定
+                .encodeABI();
+
+            let result = await toContract(
+                // toContract の呼び出し
+                this,
+                this.address,
+                this.privateKey,
+                functionAbi
+            );
         },
         signIn: function () {
             const provider = new firebase.auth.GoogleAuthProvider();
@@ -69,6 +79,14 @@ export default {
                     let user = result.user;
                     self.isSignedIn = true;
                     console.log(user.uid);
+                    //ここから追加
+                    self.privateKey = "0x" + sha256.hex(user.uid);
+                    self.address = self.$web3.eth.accounts.privateKeyToAccount(
+                        self.privateKey
+                    ).address;
+                    self.$web3.eth.defaultAccount = self.address;
+                    console.log("Address:" + self.address);
+                    //ここまで追加
                 }
             })
             .catch(function (error) {
